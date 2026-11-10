@@ -1,0 +1,54 @@
+# ---- 密钥与本地配置：绝不入库 ----
+config.json
+config.local.json
+.env
+*.key
+
+# ---- 会话留痕（含真实检材路径与案值）----
+logs/
+*.jsonl
+*.meta.json
+
+# ---- 运行产物 ----
+output/
+__pycache__/
+*.pyc
+.tmp/
+.slidep/
+.workbuddy/
+
+# ---- 厂商软件与真实检材样本（1.5 GB + 版权，永不入库）----
+skills/
+*.exe
+*.dll
+*.rar
+*.7z
+*.zip
+*.mfs
+*.E01
+*.vhdx
+*.dd
+
+# ---- 含商业产品接口细节 / 案件号 / 赛题答案的文档 ----
+docs/0*.md
+docs/20261030-*
+docs/案件*
+docs/tools_raw.json
+docs/shots/
+mcp/*.mcp.json
+
+# ---- 校方与答辩材料（含校徽、队徽、实验室名）----
+取证智能体答辩/
+
+# ---- 内部文档（仅本地保留）----
+README.内部版.md
+prompts/lessons.md
+AGENT.md.bak
+
+# ---- 本机专用辅助脚本（写死了本人的机器布局，不随仓库分发）----
+scripts/lnk_deep.py
+scripts/lnk_volume.py
+scripts/mcp_sql.py
+scripts/shots.sh
+scripts/health_check.js
+scripts/list_tools.js

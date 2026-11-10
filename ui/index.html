@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>取证智能体 · MYOS 控制台</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<!-- ============ 背景：真图（一半橙一半蓝，中间一道白光） ============ -->
+<div class="backdrop photo" aria-hidden="true">
+  <div class="bg-photo"></div>
+  <div class="aura aura-warm"></div>
+  <div class="aura aura-cool"></div>
+  <div class="blade"></div>
+  <div class="bg-veil"></div>
+  <canvas class="snow" id="snow"></canvas>
+  <div class="grain"></div>
+</div>
+
+<!-- 光标光幕：跟随指针的柔光 + 拖尾，铺在所有内容之上但不吃事件 -->
+<canvas class="cursor-fx" id="cursorFx" aria-hidden="true"></canvas>
+
+<div class="app">
+
+  <!-- ============ 侧栏 ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo" title="PolarD&amp;N">
+        <div class="logo-disc" aria-hidden="true"></div>
+        <div class="logo-3d" aria-hidden="true">
+          <img src="/assets/polardn.png" alt="" draggable="false">
+          <img src="/assets/polardn.png" alt="" draggable="false" class="back">
+        </div>
+        <span class="logo-ring" aria-hidden="true"></span>
+        <span class="logo-glint" aria-hidden="true"></span>
+      </div>
+      <div class="brand-txt">
+        <div class="brand-t">取证智能体</div>
+        <div class="brand-s">PolarD&amp;N · NIGHTWATCH</div>
+      </div>
+      <button class="side-collapse" id="btn-side-in" title="收起侧栏（Ctrl+B）" aria-label="收起侧栏">«</button>
+    </div>
+
+    <div class="side-actions">
+      <button class="btn-new" id="btn-new">
+        <span>＋</span> 新会话
+      </button>
+      <button class="btn side-hist" id="btn-history" title="历史会话">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="12" cy="12" r="8.5"/>
+          <path d="M12 7.5V12l3.2 2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="side-sec">
+      <div class="side-h">常用问法</div>
+      <div class="quick" id="quick"></div>
+    </div>
+
+    <div class="side-sec grow">
+      <div class="side-h">
+        案件
+        <button class="mini-btn" id="btn-reload-cases" title="重新读取">↻</button>
+      </div>
+      <div class="cases" id="cases">
+        <div class="muted small">读取中…</div>
+      </div>
+    </div>
+
+    <div class="side-foot">
+      <div class="conn">
+        <span class="dot" id="dot"></span>
+        <span id="connText">连接中…</span>
+      </div>
+      <div class="mini" id="meta"></div>
+    </div>
+    <div class="side-grip" id="side-grip" title="拖动调整宽度 · 双击复位"></div>
+  </aside>
+
+  <!-- ============ 主区 ============ -->
+  <main class="main">
+    <header class="topbar">
+      <div class="tb-left">
+        <button class="btn icon side-toggle" id="btn-side" title="收起 / 展开侧栏（Ctrl+B）">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px">
+            <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <span class="pill" id="pillServer">—</span>
+        <span class="pill" id="pillModel">—</span>
+      </div>
+      <div class="tb-right">
+        <button class="btn" id="btn-health">体检</button>
+        <button class="btn" id="btn-servers">连接器 <b id="srvCount">0</b></button>
+        <button class="btn" id="btn-skills">技能 <b id="skillCount">0</b></button>
+        <button class="btn" id="btn-tools">工具 <b id="toolCount">0</b></button>
+        <button class="btn" id="btn-settings" title="模型 / MCP / 通用设置">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.9" style="vertical-align:-2px">
+            <circle cx="12" cy="12" r="3.2"/>
+            <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.11a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.11a1.7 1.7 0 0 0 1.56-1.11 1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.11a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 9v0a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.11a1.7 1.7 0 0 0-1.49 1Z" stroke-linecap="round"/>
+          </svg>
+          设置
+        </button>
+        <label class="switch" title="开启后允许解密分区 / 提交取证 / 导出等改动状态的操作">
+          <input type="checkbox" id="chk-write">
+          <span class="sw"></span>
+          <span class="sw-t">写操作</span>
+        </label>
+        <button class="btn icon" id="btn-theme" title="切换明暗">◐</button>
+      </div>
+    </header>
+
+    <div class="stream" id="stream">
+      <div class="welcome" id="welcome">
+        <div class="wlogo">
+          <div class="logo-disc" aria-hidden="true"></div>
+          <div class="logo-3d" aria-hidden="true">
+            <img src="/assets/polardn.png" alt="" draggable="false">
+            <img src="/assets/polardn.png" alt="" draggable="false" class="back">
+          </div>
+          <span class="logo-ring" aria-hidden="true"></span>
+          <span class="logo-glint" aria-hidden="true"></span>
+        </div>
+        <h1>无所遁形</h1>
+        <p>背后是多台 MCP 服务器的取证工具。每一次调用都会显示在对话里，参数和返回都能点开看。</p>
+        <div class="cards" id="welcomeCards"></div>
+      </div>
+    </div>
+
+    <div class="composer">
+      <div class="composer-in">
+        <textarea id="input" rows="1" placeholder="例如：看看本机有哪些案件，第二个案子有哪些检材？"></textarea>
+        <button id="btn-stop" class="send stop" hidden title="中断本次推理（Esc）">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <rect x="6.5" y="6.5" width="11" height="11" rx="2"/>
+          </svg>
+        </button>
+        <button id="btn-send" class="send" title="发送（Enter）">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 19V5M5 12l7-7 7 7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="hint" id="hint-bar">Enter 发送 · Shift+Enter 换行 · <span id="hintModel">未配置模型</span></div>
+    </div>
+  </main>
+
+  <!-- ============ 工具抽屉 ============ -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-h">
+      <input id="tool-search" placeholder="搜索工具名或说明…" autocomplete="off">
+      <button class="btn icon" id="btn-close-drawer" title="关闭">×</button>
+    </div>
+    <div class="drawer-body" id="tool-list"></div>
+
+    <div class="runner" id="runner" hidden>
+      <div class="runner-h">
+        <span id="runner-name">工具</span>
+        <button class="btn icon" id="btn-runner-close">×</button>
+      </div>
+      <div class="runner-form" id="runner-form"></div>
+      <div class="runner-actions">
+        <button class="btn primary" id="btn-run">执行</button>
+        <span class="muted small" id="runner-tip"></span>
+      </div>
+      <pre class="runner-out" id="runner-out" hidden></pre>
+    </div>
+  </div>
+
+  <!-- ============ 连接器抽屉 ============ -->
+  <div class="drawer" id="drawer-servers">
+    <div class="drawer-h">
+      <span class="drawer-t">MCP 连接器</span>
+      <button class="btn icon" id="btn-close-servers" title="关闭">×</button>
+    </div>
+    <div class="drawer-body" id="server-list"></div>
+    <div class="drawer-foot">
+      <button class="btn" id="btn-manage-mcp">管理 / 新增</button>
+      <button class="btn" id="btn-reconnect-all">全部重连</button>
+      <span class="muted small" id="srv-tip"></span>
+    </div>
+  </div>
+
+  <!-- ============ 技能抽屉 ============ -->
+  <div class="drawer" id="drawer-skills">
+    <div class="drawer-h">
+      <input id="skill-search" placeholder="搜索技能名或说明…" autocomplete="off">
+      <button class="btn icon" id="btn-close-skills" title="关闭">×</button>
+    </div>
+    <div class="sk-jump" id="skill-jump"></div>
+    <div class="drawer-body" id="skill-groups"></div>
+
+    <div class="runner" id="skill-panel" hidden>
+      <div class="runner-h">
+        <span id="skill-title">技能</span>
+        <button class="btn icon" id="btn-skill-close">×</button>
+      </div>
+      <div class="skill-meta" id="skill-meta"></div>
+      <pre class="skill-body" id="skill-body"></pre>
+      <div class="skill-exec">
+        <input id="skill-cmd" placeholder="例如：ges status" autocomplete="off">
+        <button class="btn primary" id="btn-skill-run">执行</button>
+      </div>
+      <pre class="runner-out" id="skill-out" hidden></pre>
+    </div>
+  </div>
+
+  <!-- ============ 设置抽屉 ============ -->
+  <div class="drawer wide" id="drawer-settings">
+    <div class="drawer-h">
+      <span class="drawer-t">设置</span>
+      <div class="seg" id="set-tabs">
+        <button class="seg-b on" data-tab="model">模型</button>
+        <button class="seg-b" data-tab="mcp">MCP</button>
+        <button class="seg-b" data-tab="general">通用</button>
+      </div>
+      <button class="btn icon" id="btn-close-settings" title="关闭">×</button>
+    </div>
+    <div class="drawer-body set-body" id="set-body"></div>
+  </div>
+
+  <!-- ============ 历史会话抽屉 ============ -->
+  <div class="drawer wide" id="drawer-history">
+    <div class="drawer-h">
+      <span class="drawer-t">历史会话</span>
+      <div class="seg" id="hist-tabs">
+        <button class="seg-b on" data-arch="0">活跃</button>
+        <button class="seg-b" data-arch="1">归档</button>
+      </div>
+      <button class="btn icon" id="btn-hist-select" title="多选">☑</button>
+      <button class="btn icon" id="btn-close-history" title="关闭">×</button>
+    </div>
+    <div class="hist-search">
+      <input id="hist-search" placeholder="搜索标题或内容…" autocomplete="off">
+    </div>
+    <div class="drawer-body" id="hist-list"></div>
+    <div class="bulkbar" id="hist-bulk" hidden>
+      <label class="bulk-all"><input type="checkbox" id="hist-all"><span>全选</span></label>
+      <span class="muted small" id="hist-sel">已选 0 项</span>
+      <span class="sp"></span>
+      <button class="btn sm" id="btn-bulk-arch">归档</button>
+      <button class="btn sm danger" id="btn-bulk-del">删除</button>
+      <button class="btn sm ghost" id="btn-bulk-cancel">取消</button>
+    </div>
+    <div class="drawer-foot">
+      <button class="btn" id="btn-hist-new">新建会话</button>
+      <button class="btn" id="btn-hist-purge">清理无对话</button>
+      <span class="muted small" id="hist-tip"></span>
+    </div>
+    <div class="hist-grip" id="hist-grip" title="拖动调整宽度 · 双击复位"></div>
+  </div>
+
+  <div class="scrim" id="scrim"></div>
+
+</div>
+<script src="/fx.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

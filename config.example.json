@@ -1,0 +1,58 @@
+{
+  "_comment": "复制为 config.json 后按需修改。api_key 留空时，程序读取环境变量 MYOS_LLM_API_KEY（优先级高于本文件）。",
+  "tool_timeout": 300,
+  "mcpServers": {
+    "forensics-platform": {
+      "label": "取证平台（示例）",
+      "kind": "mcp-stdio",
+      "enabled": false,
+      "note": "把 command 指向你本机取证平台附带的 MCP 服务可执行文件。留空不连也能完整工作：内置直读工具不需要任何 MCP。",
+      "command": "PATH/TO/platform_mcp_server.exe",
+      "args": [],
+      "env": {},
+      "timeout": 120
+    },
+    "ida-pro-mcp": {
+      "label": "IDA Pro",
+      "kind": "mcp-stdio",
+      "enabled": false,
+      "note": "逆向辅助，可选。指向已安装 ida_pro_mcp 插件的 python 解释器。",
+      "command": "PATH/TO/python.exe",
+      "args": [
+        "PATH/TO/site-packages/ida_pro_mcp/server.py"
+      ],
+      "env": {},
+      "timeout": 120
+    }
+  },
+  "skills": {
+    "_comment": "roots 按顺序扫描，同名以前者为准；往目录里丢一个含 SKILL.md 的文件夹即自动入库。仓库不附带技能库。",
+    "roots": [
+      "./skills"
+    ],
+    "allow_commands": [
+      "tshark",
+      "strings",
+      "python",
+      "node",
+      "7z",
+      "hashcat",
+      "john"
+    ]
+  },
+  "llm": {
+    "base_url": "https://api.deepseek.com/v1",
+    "api_key": "",
+    "model": "deepseek-chat",
+    "temperature": 0.2,
+    "timeout": 180
+  },
+  "agent": {
+    "auto_yes": false,
+    "context": "",
+    "max_turns": 120,
+    "tool_budget": 120,
+    "renew_budget": 3,
+    "learn": true
+  }
+}
